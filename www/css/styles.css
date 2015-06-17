@@ -1,0 +1,95 @@
+#map-canvas {
+    height: 400px;
+    width: 100%;
+    margin: 0px;
+    padding: 0px
+}
+
+#map-canvas { height: 540px; width: 100% }
+.top-nav { background-color: #2dcc70; font-weight: bold; color: white; padding: 5px 5px 3px 5px }
+
+/*.bottom-nav { background-color: #317faf; }
+.bottom-nav .active { background-color: #3a96d5 }
+.nav-links { color: white; font-weight: bold }*/
+
+.navbar-default {
+    background-color: #2f9cd8;
+    border-color: #e7e7e7;
+    padding: 0px;
+    margin: 0px;
+}
+.navbar-default .navbar-nav > .active > a,
+.navbar-default .navbar-nav > .active > a:focus,
+.navbar-default .navbar-nav > .active > a:visited,
+.navbar-default .navbar-nav > .active > a:hover {
+    color: white;
+    background-color: #3a96d5;
+}
+
+.navbar-default .navbar-nav>li>a { color: white; font-weight: bold; font-family: 'Arial black' }
+.center-button {
+    padding: 2px 0px 0px 0px;
+    /* z-index: 2000; */
+    background-color: #2dcc70;
+    position: relative;
+    bottom: 53px;
+    left: 6px;
+    width: 23px;
+    border-radius: 15px;
+    border: 1px solid white;
+}
+.center-button a { color: white; }
+.map-container { position: relative }
+.drop-pin-button, .give-hand-button {
+    width: 50%;
+    float: left;
+    height: 50px;
+    padding-top: 13px;
+    font-weight: bold;
+    font-size: 17px;
+}
+.give-hand-button { background-color: #2682b6; }
+.bottom-button-container { color: white; cursor: pointer; padding: 0px }
+
+/******* DROP PIN ********/
+
+#dropPinModal { margin-top: 32px }
+#dropPinModal > .modal-content { border-radius: 0px }
+.food-icon, .water-icon, .umbrella-icon { font-size: 46px; padding: 12px 0px 0px 5px; }
+.food-icon { color: #29c776 }
+.water-icon { color: #2f9cd8 }
+.umbrella-icon { color: #8e47aa }
+
+.needs-labels > div { float: left; width: 33% }
+.needs-button {
+    background-color: #e5e5e5;
+    border-radius: 0px;
+    border: 0px;
+    width: 90px;
+    height: 90px;
+}
+
+.needs-buttons, .time-buttons { margin: 10px 0px 5px 0px }
+
+.timeframe { margin: 111px 0px 93px 0px }
+.time-labels > div { float: left; width: 25% }
+.time-button {
+    background-color: #e5e5e5;
+    border-radius: 0px;
+    border: 0px;
+    width: 65px;
+    height: 65px;
+    font-size: 37px;
+    padding: 12px;
+}
+
+.slide-to-help {
+    text-align: left;
+    background-color: #23aa66;
+    color: white;
+    padding: 14px;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.needs-button.active, .time-button.active { background-color: #CeF; }
