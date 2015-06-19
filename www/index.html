@@ -35,58 +35,59 @@
 					</ul>-->
 				</div>
 			</nav>
-		</div>
+
 
 		<!-- Modal: Drop Pin -->
-		<div class="modal fade" id="dropPinModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-			<div class="modal-dialog" role="document">
-				<div class="modal-content">
-				<div class="modal-body">
-					<div class='needs'>
-						<h4>WHAT DO THEY NEED?</h4>
-						<div class="needs-buttons" data-toggle="buttons">
-							<label class="col-sm-4 btn btn-lg btn-default needs-button">
-								<input type="checkbox" autocomplete="off"><span class="food-icon glyphicon glyphicon-apple"></span>
-							</label>
-							<label class="col-sm-4 btn btn-lg btn-default needs-button">
-								<input type="checkbox" autocomplete="off"><span class="water-icon glyphicon glyphicon-tint"></span>
-							</label>
-							<label class="col-sm-4 btn btn-lg btn-default needs-button">
-								<input type="checkbox" autocomplete="off"><span class="umbrella-icon glyphicon glyphicon-cloud-download"></span>
-							</label>
+			<div class="modal fade" id="dropPinModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+				<div class="modal-dialog" role="document">
+					<div class="modal-content">
+					<div class="modal-body">
+						<div class='needs'>
+							<h4>WHAT DO THEY NEED?</h4>
+							<div class="needs-buttons" data-toggle="buttons">
+								<label class="col-sm-4 btn btn-lg btn-default needs-button">
+									<input type="checkbox" autocomplete="off"><span class="food-icon glyphicon glyphicon-apple"></span>
+								</label>
+								<label class="col-sm-4 btn btn-lg btn-default needs-button">
+									<input type="checkbox" autocomplete="off"><span class="water-icon glyphicon glyphicon-tint"></span>
+								</label>
+								<label class="col-sm-4 btn btn-lg btn-default needs-button">
+									<input type="checkbox" autocomplete="off"><span class="umbrella-icon glyphicon glyphicon-cloud-download"></span>
+								</label>
+							</div>
+							<div class="needs-labels">
+								<div>FOOD</div>
+								<div>WATER</div>
+								<div>UMBRELLA</div>
+							</div>
 						</div>
-						<div class="needs-labels">
-							<div>FOOD</div>
-							<div>WATER</div>
-							<div>UMBRELLA</div>
-						</div>
-					</div>
 
-					<div class='timeframe'>
-						<h4>HOW LONG ARE THEY THERE?</h4>
-						<div class="time-buttons" data-toggle="buttons">
-							<label class="col-sm-3 btn btn-lg btn-default time-button">
-								<input type="checkbox" autocomplete="off"><span class="1hr-icon glyphicon glyphicon-time"></span>
-							</label>
-							<label class="col-sm-3 btn btn-lg btn-default time-button">
-								<input type="checkbox" autocomplete="off"><span class="2hr-icon glyphicon glyphicon-time"></span>
-							</label>
-							<label class="col-sm-3 btn btn-lg btn-default time-button">
-								<input type="checkbox" autocomplete="off"><span class="3hr-icon glyphicon glyphicon-time"></span>
-							</label>
-							<label class="col-sm-3 btn btn-lg btn-default time-button">
-								<input type="checkbox" autocomplete="off"><span class="4hr-icon glyphicon glyphicon-time"></span>
-							</label>
-						</div>
-						<div class="time-labels">
-							<div>1HR</div>
-							<div>2HRS</div>
-							<div>3HRS</div>
-							<div>4HRS</div>
+						<div class='timeframe'>
+							<h4>HOW LONG ARE THEY THERE?</h4>
+							<div class="time-buttons" data-toggle="buttons">
+								<label class="col-sm-3 btn btn-lg btn-default time-button">
+									<input type="checkbox" autocomplete="off"><span class="1hr-icon glyphicon glyphicon-time"></span>
+								</label>
+								<label class="col-sm-3 btn btn-lg btn-default time-button">
+									<input type="checkbox" autocomplete="off"><span class="2hr-icon glyphicon glyphicon-time"></span>
+								</label>
+								<label class="col-sm-3 btn btn-lg btn-default time-button">
+									<input type="checkbox" autocomplete="off"><span class="3hr-icon glyphicon glyphicon-time"></span>
+								</label>
+								<label class="col-sm-3 btn btn-lg btn-default time-button">
+									<input type="checkbox" autocomplete="off"><span class="4hr-icon glyphicon glyphicon-time"></span>
+								</label>
+							</div>
+							<div class="time-labels">
+								<div>1HR</div>
+								<div>2HRS</div>
+								<div>3HRS</div>
+								<div>4HRS</div>
+							</div>
 						</div>
 					</div>
-				</div>
-				<div class="slide-to-help" ng-click="app.savePin()">SLIDE TO HELP ></div>
+					<div class="slide-to-help" ng-click="map.savePin()">SLIDE TO HELP ></div>
+					</div>
 				</div>
 			</div>
 		</div>

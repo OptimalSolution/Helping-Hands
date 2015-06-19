@@ -34,6 +34,7 @@ function error(content) { log_error(content); }
         }
     };
 
+    //storage.clear(); // DEBUG: Clear pins
     app.controller('AppController', function() {
         var self = this;
 
@@ -48,45 +49,10 @@ function error(content) { log_error(content); }
             log('++ GIVE A HAND');
         };
 
+        // Show the drop pin modal
         self.dropPin = function() {
-
             log('++ DROP PIN: ' + map.getCenter());
-
-            // Show overlay
             $('#dropPinModal').modal('show');
-
-
-            // Save pin info
-        };
-
-        self.savePin = function() {
-
-            log('++ SAVE PIN: ' + map.getCenter());
-
-            // Show overlay
-            $('#dropPinModal').modal('hide');
-            var thisPin = new Pin(map.getCenter(), 1);
-            thisPin.addNeed('food');
-            pins.push(thisPin);
-
-            log('Saving PIN:');
-            log(pins);
-            storage.setItem('Pins', JSON.stringify(pins));
-            // Save pin info
-        };
-
-        self.dropPinOnMap = function() {
-            // Drop an actual pin
-
-            log('Pin dropped')
-            /*
-            var marker = new google.maps.Marker({
-                position: currentPosition,
-                animation: 'BOUNCE',
-                map: map,
-                shape: { type: 'circle', coords: [myLatlng.latitude, myLatlng.longitude, 3]},
-                title: 'My Position'
-            });*/
         };
 
         self.init();
@@ -121,6 +87,9 @@ function error(content) { log_error(content); }
 
             if(pins && pins.length > 0) {
                 log(pins.length + ' pins to show.');
+                pins.forEach(function(pin) {
+                    self.dropPinOnMap(pin);
+                })
             }
             else {
                 log('No pins to show.');
@@ -175,6 +144,59 @@ function error(content) { log_error(content); }
 
             callback();
         }
+
+        self.savePin = function() {
+
+            log('++ SAVE PIN: ' + map.getCenter());
+
+            // Hide overlay
+            $('#dropPinModal').modal('hide');
+
+            // Extract Pin Info
+            var thisPin = new Pin(map.getCenter(), 1);
+            thisPin.addNeed('food');
+
+            // Save Pin
+            pins.push(thisPin);
+            storage.setItem('Pins', JSON.stringify(pins));
+
+            // Show New Pin
+            self.dropPinOnMap(thisPin);
+        };
+
+        self.dropPinOnMap = function(pin) {
+
+            // Define the marker
+            var image = {
+                url: 'img/map_pin.png',
+                size: new google.maps.Size(40, 40),
+                origin: new google.maps.Point(0,0),
+                anchor: new google.maps.Point(20, 20) // Bubble center
+            };
+
+            // Define the clickable region
+            var click_region = {
+              coords: [1, 1, 1, 20, 18, 20, 18 , 1],
+              type: 'poly'
+            };
+
+            // Drop an actual pin
+            //var pinLatLng = new google.maps.LatLng(pin.coords.latitude, pin.coords.longitude);
+            var pinLatLng = pin.coords;
+            log('Pin dropping: ');
+            log(pin.coords);
+
+            var marker = new google.maps.Marker({
+                position: { lat: pin.coords.A, lng: pin.coords.F },
+                map: map,
+                icon: image,
+                shape: click_region,
+                animation: google.maps.Animation.DROP,
+                title: 'Active Pin',
+            });
+
+
+        };
 
         // When the map API is loaded, create the map
         google.maps.event.addDomListener(window, 'load', self.init);
