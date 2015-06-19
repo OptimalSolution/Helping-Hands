@@ -4,14 +4,19 @@ function log(message) {
     console.log(message);
 }
 
+function log_error(message) {
+    console.log('ERROR: ' + message);
+}
+
 function success() { log('Success!'); }
-function error(content) { logger.error(content); }
+function error(content) { log_error(content); }
 
 (function() {
-    var map = {},
-        myLatlng = false,
-        pins = [],
-        app = angular.module('HelpingHandApp', []);
+    var map         = {},
+        myLatlng    = false,
+        pins        = [],
+        storage     = window.localStorage;
+        app         = angular.module('HelpingHandApp', []);
 
     var Pin = function(coords, time_at_location) {
         var self                = this;
@@ -45,7 +50,7 @@ function error(content) { logger.error(content); }
 
         self.dropPin = function() {
 
-            log('++ DROP PIN: Showing modal');
+            log('++ DROP PIN: ' + map.getCenter());
 
             // Show overlay
             $('#dropPinModal').modal('show');
@@ -54,10 +59,26 @@ function error(content) { logger.error(content); }
             // Save pin info
         };
 
+        self.savePin = function() {
+
+            log('++ SAVE PIN: ' + map.getCenter());
+
+            // Show overlay
+            $('#dropPinModal').modal('hide');
+            var thisPin = new Pin(map.getCenter(), 1);
+            thisPin.addNeed('food');
+            pins.push(thisPin);
+
+            log('Saving PIN:');
+            log(pins);
+            storage.setItem('Pins', JSON.stringify(pins));
+            // Save pin info
+        };
+
         self.dropPinOnMap = function() {
             // Drop an actual pin
 
-            logger('Pin dropped')
+            log('Pin dropped')
             /*
             var marker = new google.maps.Marker({
                 position: currentPosition,
@@ -74,6 +95,7 @@ function error(content) { logger.error(content); }
     app.controller('MapController', function() {
 
         var self = this;
+
         self.defaultLocation = { latitude: 32.842674, longitude: -117.257767 }  // San Diego
 
         self.centerMap = function(coords) {
@@ -86,57 +108,60 @@ function error(content) { logger.error(content); }
 
         self.centerMapOnMe = function() {
             if(!myLatlng) {
-                logger.error('No user position saved');
+                log_error('No user position saved');
                 alert("We couldn't find your position. Please make sure Location Services is turned on.");
             }
             else {
                 log('>> Centering map on me');
-                log(myLatlng);
                 map.panTo(myLatlng);
             }
         }
 
-        self.getUserLocation = function() {
+        self.showPins = function() {
 
-            log(">> Getting User Locaion...")
-            // TODO: Make it so that it falls back to HTML5 location (or HTML5 lookup on timeout)
-            forge.geolocation.getCurrentPosition(function(position) {
+            if(pins && pins.length > 0) {
+                log(pins.length + ' pins to show.');
+            }
+            else {
+                log('No pins to show.');
+            }
+        }
+
+        self.getUserLocation = function(callback) {
+
+            log(">> Getting User Locaion...");
+            navigator.geolocation.getCurrentPosition(function(position) {
 
                 // Save the position and re-center the map
                 myLatlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-                log('++ Saving User Position')
-                log(myLatlng)
-                forge.prefs.set("myLastLocation", position.coords)
-                self.centerMapOnMe();
-            }, logger.error, { "enableHighAccuracy": true });
+                log('++ GOT User Location');
+                callback(position.coords);
+
+            }, function(e) {
+                log_error(e + ' - Returning default location');
+                callback(self.defaultLocation);
+            });
         }
 
-        self.getLastUserLocation = function(callback) {
-            log("Looking up last location")
-            callback(self.defaultLocation)
-            /*forge.prefs.get("myLastLocation", function(location) {
-                if (location) { // user has previously selected a city
-                    log('++ Cached user location ' + (typeof location))
-                    callback(location)
-                } else { // no previous selection
-                    log('-- Default user location!')
-                    callback(self.defaultLocation)
-                }
-            }, function (error) {
-                forge.logging.error("Failed when retrieving last location");
-                callback(self.defaultLocation)
-            });*/
+        self.loadPins = function(callback) {
+            log('Loading pins...');
+            pins = JSON.parse(storage.getItem('Pins')) || [];
+            log(pins);
+            callback();
         }
 
         self.init = function() {
-            //self.getUserLocation();
             log('Init Map...');
-            self.getLastUserLocation(function(location) {
-                self.createMap(location);
-            })
+            // Load the pins from storage and get the user's location
+            self.loadPins(function() {
+                self.getUserLocation(function(location) {
+                    // After getting their location, show the map and pins
+                    self.createMap(location, self.showPins);
+                })
+            });
         }
 
-        self.createMap = function(coords) {
+        self.createMap = function(coords, callback) {
 
             log('>> Creating map:')
             var thisLatLng = new google.maps.LatLng(coords.latitude, coords.longitude);
@@ -147,8 +172,11 @@ function error(content) { logger.error(content); }
               scrollwheel: false,
               disableDefaultUI: true
             });
+
+            callback();
         }
 
-        self.init();
+        // When the map API is loaded, create the map
+        google.maps.event.addDomListener(window, 'load', self.init);
     });
 })();
