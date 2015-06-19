@@ -1,11 +1,18 @@
 #map-canvas {
-    height: 400px;
+    height: 540px;
     width: 100%;
     margin: 0px;
     padding: 0px
 }
 
-#map-canvas { height: 540px; width: 100% }
+.map-center {
+    z-index: 100;
+    width: 100%;
+    text-align: center;
+    margin-top: 50%;
+    position: absolute;
+    top: 16%;
+}
 .top-nav { background-color: #2dcc70; font-weight: bold; color: white; padding: 5px 5px 3px 5px }
 
 /*.bottom-nav { background-color: #317faf; }
