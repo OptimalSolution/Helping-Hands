@@ -5,11 +5,18 @@
 		<meta name="viewport" content="initial-scale=1">
 		<script src="js/jquery.min.js"></script>
 		<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
-		<script src="http://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true"></script>
-		<script src="js/bootstrap.js"></script>
+		<script src="https://www.parse.com/downloads/javascript/parse-1.4.2.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC6Qfbd_zjalNr0MmZa_rNMn4KsA6POwY4"></script>
 		<script src="js/main.js"></script>
-		<link href="css/bootstrap.css" rel="stylesheet">
+
+		<!-- Local versions -->
+		<!-- script src="js/bootstrap.js"></script -->
+		<!-- link href="css/bootstrap.css" rel="stylesheet" -->
+		<!-- script src="js/google-maps-http.js"></script -->
+		<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
 		<link href="css/styles.css" rel="stylesheet">
+
 		<style type="text/css">
 
 		</style>
@@ -21,7 +28,7 @@
 				<span>HELPING HANDS</span>
 				<span class="pull-right glyphicon glyphicon-user"></span>
 			</div>
-			<div id="map-canvas">Loading Map.....</div>
+			<div id="map-canvas"><p>Loading Map...</p></div>
 			<div class="map-center"><img src="img/map_center.png" alt="" /></div>
 			<div class="center-button"><a href ng-click="map.centerMapOnMe()"><span class="glyphicon glyphicon-screenshot"></span></a></div>
 			<nav class="navbar navbar-default navbar-fixed-bottom bottom-nav">
@@ -37,7 +44,7 @@
 			</nav>
 
 
-		<!-- Modal: Drop Pin -->
+			<!-- Modal: Drop Pin -->
 			<div class="modal fade" id="dropPinModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
 				<div class="modal-dialog" role="document">
 					<div class="modal-content">
@@ -46,13 +53,13 @@
 							<h4>WHAT DO THEY NEED?</h4>
 							<div class="needs-buttons" data-toggle="buttons">
 								<label class="col-sm-4 btn btn-lg btn-default needs-button">
-									<input type="checkbox" autocomplete="off"><span class="food-icon glyphicon glyphicon-apple"></span>
+									<input class="need" type="checkbox" value="food" autocomplete="off"><span class="food-icon glyphicon glyphicon-apple"></span>
 								</label>
 								<label class="col-sm-4 btn btn-lg btn-default needs-button">
-									<input type="checkbox" autocomplete="off"><span class="water-icon glyphicon glyphicon-tint"></span>
+									<input class="need" type="checkbox" value="water" autocomplete="off"><span class="water-icon glyphicon glyphicon-tint"></span>
 								</label>
 								<label class="col-sm-4 btn btn-lg btn-default needs-button">
-									<input type="checkbox" autocomplete="off"><span class="umbrella-icon glyphicon glyphicon-cloud-download"></span>
+									<input class="need" type="checkbox" value="umbrella" autocomplete="off"><span class="umbrella-icon glyphicon glyphicon-cloud-download"></span>
 								</label>
 							</div>
 							<div class="needs-labels">
@@ -65,17 +72,17 @@
 						<div class='timeframe'>
 							<h4>HOW LONG ARE THEY THERE?</h4>
 							<div class="time-buttons" data-toggle="buttons">
-								<label class="col-sm-3 btn btn-lg btn-default time-button">
-									<input type="checkbox" autocomplete="off"><span class="1hr-icon glyphicon glyphicon-time"></span>
+								<label class="col-sm-3 col-md-3 col-lg-3 btn btn-lg btn-default time-button active">
+									<input class="time_at_location" type="radio" autocomplete="off" value='1'><span class="1hr-icon glyphicon glyphicon-time"></span>
 								</label>
-								<label class="col-sm-3 btn btn-lg btn-default time-button">
-									<input type="checkbox" autocomplete="off"><span class="2hr-icon glyphicon glyphicon-time"></span>
+								<label class="col-sm-3 col-md-3 col-lg-3 btn btn-lg btn-default time-button">
+									<input class="time_at_location" type="radio" autocomplete="off" value='2'><span class="2hr-icon glyphicon glyphicon-time"></span>
 								</label>
-								<label class="col-sm-3 btn btn-lg btn-default time-button">
-									<input type="checkbox" autocomplete="off"><span class="3hr-icon glyphicon glyphicon-time"></span>
+								<label class="col-sm-3 col-md-3 col-lg-3 btn btn-lg btn-default time-button">
+									<input class="time_at_location" type="radio" autocomplete="off" value='3'><span class="3hr-icon glyphicon glyphicon-time"></span>
 								</label>
-								<label class="col-sm-3 btn btn-lg btn-default time-button">
-									<input type="checkbox" autocomplete="off"><span class="4hr-icon glyphicon glyphicon-time"></span>
+								<label class="col-sm-3 col-md-3 col-lg-3 btn btn-lg btn-default time-button">
+									<input class="time_at_location" type="radio" autocomplete="off" value='4'><span class="4hr-icon glyphicon glyphicon-time"></span>
 								</label>
 							</div>
 							<div class="time-labels">
@@ -87,6 +94,47 @@
 						</div>
 					</div>
 					<div class="slide-to-help" ng-click="map.savePin()">SLIDE TO HELP ></div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Modal: Inspect Pin -->
+			<div class="modal fade" id="inspectPinModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+				<div class="modal-dialog" role="document">
+					<div class="modal-content">
+					<div class="modal-body">
+						<div class='needs'>
+							<h4>THIS PERSON NEEDS...</h4>
+							<div class="needs-buttons" data-toggle="buttons">
+								<label class="col-sm-4 btn btn-lg btn-default needs-button">
+									<input class="need" type="checkbox" value="food" autocomplete="off"><span class="food-icon glyphicon glyphicon-apple"></span>
+								</label>
+								<label class="col-sm-4 btn btn-lg btn-default needs-button">
+									<input class="need" type="checkbox" value="water" autocomplete="off"><span class="water-icon glyphicon glyphicon-tint"></span>
+								</label>
+								<label class="col-sm-4 btn btn-lg btn-default needs-button">
+									<input class="need" type="checkbox" value="umbrella" autocomplete="off"><span class="umbrella-icon glyphicon glyphicon-cloud-download"></span>
+								</label>
+							</div>
+							<div class="needs-labels">
+								<div class="food-icon-label">FOOD</div>
+								<div class="water-icon-label">WATER</div>
+								<div class="umbrella-icon-label">UMBRELLA</div>
+							</div>
+						</div>
+						<div class="food-note">*PLEASE ENSURE ALL FOOD IS INDIVIDUALLY WRAPPED</div>
+
+						<div class='location'>
+							<h4>HERE ARE THE DETAILS...</h4>
+							<ul class="location-details">
+								<li>Distance: <span class="distance">--</span></li>
+								<li>Direction: <span class="direction">--</span></li>
+								<li>Estimated Walk Time: <span class="eta">--</span></li>
+							</ul>
+						</div>
+					</div>
+					<input type="hidden" name="pin_id" value="">
+					<div class="slide-to-help" ng-click="map.giveHand()">SLIDE TO ACCEPT ></div>
 					</div>
 				</div>
 			</div>
