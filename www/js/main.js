@@ -195,19 +195,6 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
 
         self.createMap = function(coords, elementId, callback) {
 
-                /*
-            var mapCoords = { lat: -34.397, lng: 150.644};
-
-            mapCoords = coords;
-            log('>> Creating map at: ' + JSON.stringify(mapCoords) + ' for ' + elementId);
-            var mapOptions = {
-              center: mapCoords,
-              zoom: 8
-            };
-            var thisMap = new google.maps.Map(document.getElementById('map-canvas'),
-                mapOptions);
-*/
-
             var thisMap = new google.maps.Map(document.getElementById(elementId), {
                     zoom: self.initialMapZoom,
                     center: self.getLatLng(coords),
