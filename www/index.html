@@ -22,6 +22,27 @@
 		</style>
 	</head>
 	<body ng-controller="AppController as app" class="text-center">
+		<div class="loading-screen">
+			<div class="header">
+				<div class="greeting">Welcome to Helping Hands</div>
+				<img class="logo" src="icon.png" alt="Helping Hands Logo">
+			</div>
+			<div class="login-prompt col-xs-12 col-sm-12">
+				<div class="greeting">Please log in to continue.</div>
+				<div class="input-group col-xs-12 col-sm-12">
+					<span class="input-group-addon" id="sizing-addon1">Email</span>
+					<input name="email" type="text" class="form-control" placeholder="example@website.com" aria-describedby="sizing-addon1">
+				</div>
+				<div class="input-group col-xs-12 col-sm-12">
+					<span class="input-group-addon" id="sizing-addon1">Password</span>
+					<input name="password" type="password" class="form-control" placeholder="" aria-describedby="sizing-addon1">
+				</div>
+				<div class="login-buttons">
+					<a class="create-account pull-left">Create New Account</a>
+					<button class="btn btn-lg btn-primary login pull-right" ng-click="app.login()">Login</button>
+				</div>
+			</div>
+		</div>
 		<div id="map-container" ng-controller="MapController as map">
 			<div class="top-nav">
 				<span class="pull-left glyphicon glyphicon-th-list"></span>

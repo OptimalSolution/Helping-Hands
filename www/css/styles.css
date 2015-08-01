@@ -126,3 +126,17 @@
 .needs-button.active, .time-button.active { background-color: #CeF; }
 
 .location-details { list-style: none; text-align: left }
+.login-prompt .input-group { margin: 0 auto; }
+.loading-screen {
+    width: 100%;
+    background-color: #ADC4FF;
+    height: 100%;
+    z-index: 5000;
+    position: absolute;
+}
+.header { margin-top: 20% }
+.login-prompt { margin-top: 30px }
+.login-prompt .input-group { margin-top: 10px }
+.login-prompt .input-group-addon { width: 88px }
+.login-buttons { margin-top: 15px }
+.create-account { margin-top: 10px; text-decoration: underline }

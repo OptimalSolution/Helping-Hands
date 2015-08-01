@@ -53,12 +53,18 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
     //storage.clear(); // DEBUG: Clear pins
     app.controller('AppController', function() {
         var self = this;
+        self.greeting = 'Welcome...';
 
         self.init = function() {
 
             log('Init App...');
-            // DEBUG
-            //self.dropPin();
+
+            // Check to see if they're logged in already
+
+        }
+
+        self.login = function() {
+            $('.loading-screen').fadeOut('medium');
         }
 
         self.giveAHand = function() {
@@ -200,7 +206,8 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
                     center: self.getLatLng(coords),
                     scrollwheel: true,
                     mapTypeId: google.maps.MapTypeId.ROADMAP,
-                    disableDefaultUI: true
+                    disableDefaultUI: true,
+                    disableDoubleClickZoom: true
             });
             callback(thisMap);
         }
