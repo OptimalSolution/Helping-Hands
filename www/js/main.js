@@ -163,7 +163,7 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
             log('Finding nearest pin...');
             self.loadPins(function(pins) {
                 if(pins && pins.length > 0) {
-                    pins[0];
+                    self.inspectPin(pins[0].id);
                 }
                 else {
                     alert("Sorry, but we can't find anyone in need that is also within walking distance of your current location.");
@@ -237,7 +237,7 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
 
             log('Loading pins around ' + self.myLatlng.lat + ',' + self.myLatlng.lng);
             var pinQuery = new Parse.Query(Pin);
-            //pinQuery.near('coords', new Parse.GeoPoint(self.myLatlng.lat, self.myLatlng.lng));
+            pinQuery.near('coords', new Parse.GeoPoint(self.myLatlng.lat, self.myLatlng.lng));
             pinQuery.find({
               success: function(results) {
                 log("Successfully retrieved " + results.length + " pins.");
