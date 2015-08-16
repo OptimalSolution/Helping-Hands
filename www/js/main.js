@@ -35,16 +35,8 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
                 var myCoords = this.get('coords'),
                 converted = [myCoords.latitude, myCoords.longitude];
 
-                log('Geo point:');
-                log(converted);
 
                 return converted;
-
-                var points = [];
-                for(var i in myCoords) {
-                    points.push(myCoords[i]);
-                }
-                return [points[0], points[1]];
             }
 
         }, {
@@ -130,6 +122,9 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
     app.controller('MapController', function() {
 
         var self = this;
+        self.pins = null;
+        self.pinCache = {};
+        self.pinQuery = new Parse.Query(Pin);
         self.directionsService = null,
         self.directionsDisplay = null;
 
@@ -149,7 +144,6 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
                 log(location);
                 // After getting their location, load pins nearby
                 self.loadPins(function(pins) {
-                    self.pins = pins;
                     self.createMap(location, 'map-canvas', function(mainMap) {
                         map = mainMap;
                         self.directionsDisplay.setMap(map);
@@ -235,19 +229,28 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
 
         self.loadPins = function(callback) {
 
-            log('Loading pins around ' + self.myLatlng.lat + ',' + self.myLatlng.lng);
-            var pinQuery = new Parse.Query(Pin);
-            pinQuery.near('coords', new Parse.GeoPoint(self.myLatlng.lat, self.myLatlng.lng));
-            pinQuery.find({
-              success: function(results) {
-                log("Successfully retrieved " + results.length + " pins.");
-                callback(results);
-              },
-              error: function(error) {
-                log("Error: " + error.code + " " + error.message);
-                callback([]);
-              }
-            });
+            // Only reload the pins if they aren't cached
+            if(!self.pins) {
+                log('Loading pins around ' + self.myLatlng.lat + ',' + self.myLatlng.lng);
+                self.pinQuery = new Parse.Query(Pin);
+                self.pinQuery.near('coords', new Parse.GeoPoint(self.myLatlng.lat, self.myLatlng.lng));
+                self.pinQuery.find({
+                  success: function(results) {
+                    log("Successfully retrieved " + results.length + " pins.");
+                    self.pins = results;
+                    callback(results);
+                  },
+                  error: function(error) {
+                    log("Error: " + error.code + " " + error.message);
+                    callback([]);
+                  }
+                });
+
+            }
+            else {
+                // The pins have already been loaded, so just return them
+                callback(self.pins);
+            }
         }
 
         // Get a Google LatLng object from any format of coordinates
@@ -319,12 +322,39 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
             }
         };
 
+        self.getPinById = function(pinId, callback) {
+            log('Geting pin: ' + pinId);
+            var pin_found = false;
+
+            // First, search the local cache
+            if(self.pins) {
+                self.pins.forEach(function(pin) {
+                    if(pin.id == pinId) {
+                        pin_found = true;
+                        callback(null, pin);
+                    }
+                })
+            }
+
+            // The last resort is to look it up on the server
+            if(!pin_found) {
+                self.pinQuery.get(pinId, {
+                    success: function(thePin) {
+                        self.pinCache[pinId] = thePin;
+                        callback(null, thePin);
+                    },
+                    error: function(object, error) {
+                        callback(error, thePin);
+                    }
+                });
+            }
+        }
+
         self.inspectPin = function(pinId) {
 
             log('Inspecting pin...');
-            var pinQuery = new Parse.Query(Pin);
-            pinQuery.get(pinId, {
-              success: function(thePin) {
+            self.getPinById(pinId, function(err, thePin) {
+                log('Pin found!');
                 var needs = thePin.get('needs');
                 $('#inspectPinModal .needs-button').hide();
                 $('#inspectPinModal .needs-labels div').hide();
@@ -345,13 +375,7 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
                     $('#inspectPinModal .location-details .eta').text(stats.eta);
                     $('#inspectPinModal').modal('show');
                 })
-              },
-              error: function(object, error) {
-                // The object was not retrieved successfully.
-                // error is a Parse.Error with an error code and message.
-              }
             });
-
         };
         self.getRouteStats = function(directions) {
             var stats = { distance: 0.0, time: 0.0, eta: '(Unknown)' };
@@ -378,25 +402,16 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
             $('.map-center').hide();
             $('#inspectPinModal').modal('hide');
 
-            var pin_id = $('#inspectPinModal input[name="pin_id"]').val();
-            var pinQuery = new Parse.Query(Pin);
-            pinQuery.get(pin_id, {
-              success: function(thePin) {
-
-                log('Giving a hand to: ' + pin_id);
+            var pinId = $('#inspectPinModal input[name="pin_id"]').val();
+            self.getPinById(pinId, function(err, thePin) {
+                log('Giving a hand to: ' + pinId);
                 self.getDirectionsToPin(thePin, function(err, directions) {
                     if (!err) {
                       log('=== DISPLAYING ROUTE ===');
                       self.directionsDisplay.setDirections(directions);
                     }
                 });
-              },
-              error: function(object, error) {
-                // The object was not retrieved successfully.
-                // error is a Parse.Error with an error code and message.
-              }
-            });
-
+            })
         }
 
         self.getDirectionsToPin = function(thePin, callback) {
