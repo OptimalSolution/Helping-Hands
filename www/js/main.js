@@ -29,6 +29,22 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
                 var these_needs = this.get('needs');
                 log('Validating pin: ' + (these_needs.length > 0) ? 'Has needs' : 'No needs!');
                 return (these_needs && these_needs.length > 0);
+            },
+
+            getMapPoints: function() {
+                var myCoords = this.get('coords'),
+                converted = [myCoords.latitude, myCoords.longitude];
+
+                log('Geo point:');
+                log(converted);
+
+                return converted;
+
+                var points = [];
+                for(var i in myCoords) {
+                    points.push(myCoords[i]);
+                }
+                return [points[0], points[1]];
             }
 
         }, {
@@ -36,11 +52,20 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
             create: function(coords, time_at_location) {
 
                 var newPin = new Pin();
-                log('Creating pin...');
+                log('Creating pin at: ');
+                log(coords);
                 newPin.set('needs', []);
                 newPin.set('time_at_location', parseInt(time_at_location) || 1); // Default to 1 hour
                 newPin.set('created_on', new Date());
-                newPin.set('coords', coords);
+
+                var mapPoints = [], n = 0;
+                for(var i in coords) {
+                    if(n <= 1) {
+                        mapPoints.push(coords[i]);
+                    }
+                    n++;
+                }
+                newPin.set('coords', new Parse.GeoPoint(mapPoints[0], mapPoints[1]));
 
                 // Calculate when they will be there until
                 var there_until = new Date();
@@ -50,7 +75,6 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
             }
     });
 
-    //storage.clear(); // DEBUG: Clear pins
     app.controller('AppController', function() {
         var self = this;
         self.greeting = 'Welcome...';
@@ -58,7 +82,20 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
         self.init = function() {
 
             log('Init App...');
+            // Check to see if they're logged in already
 
+        }
+
+        self.showUserFeed = function() {
+
+            log('Showing user feed...');
+            // Check to see if they're logged in already
+
+        }
+
+        self.showUserInfo = function() {
+
+            log('Showing User Info...');
             // Check to see if they're logged in already
 
         }
@@ -67,9 +104,14 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
             $('.loading-screen').fadeOut('medium');
         }
 
-        self.giveAHand = function() {
-            log('++ GIVE A HAND');
-        };
+        self.logout = function() {
+            if(confirm("Would you like to log out?")) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
 
         // Show the drop pin modal
         self.dropPin = function() {
@@ -88,8 +130,8 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
     app.controller('MapController', function() {
 
         var self = this;
-        self.directionsService = new google.maps.DirectionsService(),
-        self.directionsDisplay = new google.maps.DirectionsRenderer();
+        self.directionsService = null,
+        self.directionsDisplay = null;
 
         self.markers = [];
         self.myLatlng = false;
@@ -99,11 +141,15 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
         self.init = function() {
             log('Init Map...');
 
+            self.directionsDisplay = new google.maps.DirectionsRenderer();
+
             // Load the pins from storage and get the user's location
-            self.loadPins(function(pins) {
-                self.pins = pins;
-                self.getUserLocation(function(location) {
-                    // After getting their location, show the map and pins
+            self.getUserLocation(function(location) {
+                log('*** User location ***');
+                log(location);
+                // After getting their location, load pins nearby
+                self.loadPins(function(pins) {
+                    self.pins = pins;
                     self.createMap(location, 'map-canvas', function(mainMap) {
                         map = mainMap;
                         self.directionsDisplay.setMap(map);
@@ -112,6 +158,18 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
                 })
             });
         }
+
+        self.inspectNearestPin = function() {
+            log('Finding nearest pin...');
+            self.loadPins(function(pins) {
+                if(pins && pins.length > 0) {
+                    pins[0];
+                }
+                else {
+                    alert("Sorry, but we can't find anyone in need that is also within walking distance of your current location.");
+                }
+            })
+        };
 
         self.hidePins = function() {
             self.markers.forEach(function(marker) {
@@ -132,6 +190,7 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
             }
             else {
                 log('>> Centering map on me');
+                log(self.myLatlng);
                 map.panTo(self.myLatlng);
             }
         }
@@ -176,8 +235,9 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
 
         self.loadPins = function(callback) {
 
-            log('Loading pins...');
+            log('Loading pins around ' + self.myLatlng.lat + ',' + self.myLatlng.lng);
             var pinQuery = new Parse.Query(Pin);
+            //pinQuery.near('coords', new Parse.GeoPoint(self.myLatlng.lat, self.myLatlng.lng));
             pinQuery.find({
               success: function(results) {
                 log("Successfully retrieved " + results.length + " pins.");
@@ -276,12 +336,15 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
                     $('.' + need + '-icon-label').show();
                 })
 
-                $('#inspectPinModal').modal('show');
+                // Show approximate distance and time
+                self.getDirectionsToPin(thePin, function(err, directions) {
 
-                // Create a mini-map
-                var pin_location = thePin.get('coords');
-
-
+                    var stats = self.getRouteStats(directions);
+                    $('#inspectPinModal .location-details .distance').text(stats.distance);
+                    $('#inspectPinModal .location-details .time').text(stats.time);
+                    $('#inspectPinModal .location-details .eta').text(stats.eta);
+                    $('#inspectPinModal').modal('show');
+                })
               },
               error: function(object, error) {
                 // The object was not retrieved successfully.
@@ -290,7 +353,23 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
             });
 
         };
+        self.getRouteStats = function(directions) {
+            var stats = { distance: 0.0, time: 0.0, eta: '(Unknown)' };
+            var now = new Date();
 
+            // If there is a route, sum up the distance of the legs
+            if(directions.routes && directions.routes[0]) {
+                var route = directions.routes[0];
+                if(route && route.legs && route.legs[0]) {
+                    stats.distance = route.legs[0].distance.text;
+                    stats.time = route.legs[0].duration.text;
+                    var eta = new Date(now.getTime() + 1000*route.legs[0].duration.value);
+                    stats.eta = eta.getHours() + ':' + eta.getMinutes();
+                    stats.eta = eta.toLocaleTimeString();
+                }
+            }
+            return stats;
+        }
         self.giveHand = function() {
 
             // Center the map and hide the modal
@@ -299,25 +378,16 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
             $('.map-center').hide();
             $('#inspectPinModal').modal('hide');
 
-
-            log('Giving a hand to: ' + pin_id);
             var pin_id = $('#inspectPinModal input[name="pin_id"]').val();
             var pinQuery = new Parse.Query(Pin);
             pinQuery.get(pin_id, {
               success: function(thePin) {
 
-                // Create a mini-map
-                var pin_location = thePin.get('coords');
-                self.directionsService.route({
-                    origin: self.myLatlng,
-                    destination: self.getLatLng(pin_location),
-                    travelMode: google.maps.TravelMode.WALKING
-
-                }, function(response, status) {
-                    if (status == google.maps.DirectionsStatus.OK) {
-                      log('=== ROUTE ===');
-                      log(response);
-                      self.directionsDisplay.setDirections(response);
+                log('Giving a hand to: ' + pin_id);
+                self.getDirectionsToPin(thePin, function(err, directions) {
+                    if (!err) {
+                      log('=== DISPLAYING ROUTE ===');
+                      self.directionsDisplay.setDirections(directions);
                     }
                 });
               },
@@ -328,6 +398,46 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
             });
 
         }
+
+        self.getDirectionsToPin = function(thePin, callback) {
+
+            // Init directions service
+            if(!self.directionsService) {
+                self.directionsService = new google.maps.DirectionsService();
+            }
+            // TODO: Cache this!
+            log('Getting directions to a pin...');
+
+            // Create a mini-map
+            var pin_location = thePin.get('coords');
+            self.directionsService.route({
+                origin: self.myLatlng,
+                destination: self.getLatLng(pin_location),
+                travelMode: google.maps.TravelMode.WALKING
+
+            }, function(response, status) {
+                if (status == google.maps.DirectionsStatus.OK) {
+                    callback(null, response);
+                }
+                else {
+                    callback(status, response);
+                }
+            });
+        };
+
+        self.cancelDelivery = function(pin, whichMap) {
+            // Ask them why on their way out (can't find person, ran out of time)
+        };
+
+        self.completeDelivery = function(pin, whichMap) {
+            // 1) Ask them if they delivered the goods
+        };
+
+        self.markDeliveryComplete = function(pin, whichMap) {
+            // 1) Mark the delivery as complete
+            // 2) Update the HH feed
+            // 3) Notify the creator that this person helped
+        };
 
         self.dropPinOnMap = function(pin, whichMap) {
 
@@ -346,9 +456,9 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
             };
 
             // Drop an actual pin
-            var pinLatLng = pin.get('coords'),
+            var pinLatLng = pin.getMapPoints(),
                 marker = new google.maps.Marker({
-                    position: { lat: pinLatLng.A, lng: pinLatLng.F },
+                    position: { lat: pinLatLng[0], lng: pinLatLng[1] },
                     map: whichMap,
                     icon: image,
                     shape: click_region,
@@ -359,7 +469,6 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
                 });
 
                 self.markers.push(marker);
-
                 google.maps.event.addListener(marker, 'click', function() {
                     console.log('Clicked on Marker: ' + marker.pinId);
                     whichMap.setZoom(self.initialMapZoom);
@@ -369,6 +478,7 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
         };
 
         // When the map API is loaded, create the map
+        //log("***** MAP INIT OFF *****")
         google.maps.event.addDomListener(window, 'load', self.init);
     });
 })();
