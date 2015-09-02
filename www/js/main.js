@@ -18,7 +18,7 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
     var map = {},
         app = angular.module('HelpingHandApp', []);
 
-    //var Pin = function(coords, time_at_location) {
+    // TODO: Move to own file
     var Pin = Parse.Object.extend("Pin", {
             addNeed: function(need) {
                 log('Adding need: ' + need);
@@ -48,7 +48,6 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
                 log(coords);
                 newPin.set('needs', []);
                 newPin.set('time_at_location', parseInt(time_at_location) || 1); // Default to 1 hour
-                newPin.set('created_on', new Date());
 
                 var mapPoints = [], n = 0;
                 for(var i in coords) {
@@ -70,17 +69,33 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
     app.controller('AppController', function() {
         var self = this;
         self.greeting = 'Welcome...';
+        self.helpstream = [];
+        self.user = { username: 'Meeee', email: 'daryl@sdtta.org', password: '****', id: '818' };
 
         self.init = function() {
 
             log('Init App...');
             // Check to see if they're logged in already
 
+            // DEBUG: Helpstream filler
+            self.addHelpstreamItem('I gave her some water leftover from a corporate event.');
+            self.addHelpstreamItem('I gave him a subway sandwhich since it was 2-for-1 day.');
+            self.addHelpstreamItem('I gave him my old umbrella since i just got a new one.');
         }
 
-        self.showUserFeed = function() {
+        self.addHelpstreamItem = function(note) {
+            var delivery = {
+                helper: self.user,
+                note: note,
+                createdAt: new Date()
+            };
+            self.helpstream.push(delivery);
+        }
+
+        self.showHelpstream = function() {
 
             log('Showing user feed...');
+            $('#helpstream').show();
             // Check to see if they're logged in already
 
         }
@@ -394,6 +409,7 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
             }
             return stats;
         }
+
         self.giveHand = function() {
 
             // Center the map and hide the modal
@@ -493,7 +509,7 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
         };
 
         // When the map API is loaded, create the map
-        //log("***** MAP INIT OFF *****")
-        google.maps.event.addDomListener(window, 'load', self.init);
+        log("***** MAP INIT OFF *****")
+        //google.maps.event.addDomListener(window, 'load', self.init);
     });
 })();

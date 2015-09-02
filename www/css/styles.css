@@ -140,3 +140,5 @@
 .login-prompt .input-group-addon { width: 88px }
 .login-buttons { margin-top: 15px }
 .create-account { margin-top: 10px; text-decoration: underline }
+
+.helpstream-button, user-info-button { cursor: pointer }
