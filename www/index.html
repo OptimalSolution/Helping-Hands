@@ -24,6 +24,8 @@
 		<link href="css/styles.css" rel="stylesheet">
 	</head>
 	<body ng-controller="AppController as app" class="text-center">
+
+		<!-- LOADING SCREEN -->
 		<div class="loading-screen">
 			<div class="header">
 				<div class="greeting">Welcome to Helping Hands</div>
@@ -31,17 +33,22 @@
 			</div>
 			<div class="login-prompt col-xs-12 col-sm-12">
 				<div class="greeting">Please log in to continue.</div>
-				<div class="input-group col-xs-12 col-sm-12">
+				<div class="input-group col-xs-12 col-sm-12" style="display: none">
 					<span class="input-group-addon" id="sizing-addon1">Email</span>
-					<input name="email" type="text" class="form-control" placeholder="example@website.com" aria-describedby="sizing-addon1">
+					<input id="email" type="text" class="form-control" placeholder="helper@hh.org" aria-describedby="sizing-addon1">
+				</div>
+				<div class="input-group col-xs-12 col-sm-12">
+					<span class="input-group-addon" id="sizing-addon1">Username</span>
+					<input id="username" type="text" class="form-control" placeholder="helperElf2000" aria-describedby="sizing-addon1">
 				</div>
 				<div class="input-group col-xs-12 col-sm-12">
 					<span class="input-group-addon" id="sizing-addon1">Password</span>
-					<input name="password" type="password" class="form-control" placeholder="" aria-describedby="sizing-addon1">
+					<input id="password" type="password" class="form-control" placeholder="" aria-describedby="sizing-addon1">
 				</div>
 				<div class="login-buttons">
-					<a class="create-account pull-left">Create New Account</a>
+					<a class="create-account pull-left pointer" ng-click="app.showCreateAccountScreen()">Create New Account</a>
 					<button class="btn btn-lg btn-primary login pull-right" ng-click="app.login()">Login</button>
+					<button class="btn btn-lg btn-primary create pull-right" ng-click="app.createAccount()">Create Account</button>
 				</div>
 			</div>
 		</div>
@@ -50,7 +57,7 @@
 				<span class="pull-left glyphicon glyphicon-th-list pointer btn-helpstream" ng-click="app.showHelpstream()"></span>
 				<span class="pull-left glyphicon glyphicon-chevron-left btn-back pointer"></span>
 				<span>HELPING HANDS</span>
-				<span class="pull-right glyphicon glyphicon-user btn-userinfo pointer" ng-click="app.showUserInfo()"></span></a>
+				<span class="pull-right glyphicon glyphicon-user btn-userinfo pointer" ng-click="app.logout()"></span></a>
 				<span class="pull-right glyphicon glyphicon-remove btn-close pointer"></span>
 			</div>
 			<div id="helpstream">

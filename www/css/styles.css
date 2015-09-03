@@ -142,7 +142,8 @@
 .create-account { margin-top: 10px; text-decoration: underline }
 
 .pointer { cursor: pointer }
-.btn-helpstream-back, .btn-userinfo-back, .btn-close, .btn-back { display : none }
+button.create, .btn-helpstream-back, .btn-userinfo-back, .btn-close, .btn-back { display : none }
+error { font-weight: bold; color: #900 }
 
 #helpstream { display: none;
     position: absolute;

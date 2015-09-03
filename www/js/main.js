@@ -77,15 +77,28 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
             log('Init App...');
             // Check to see if they're logged in already
 
+            self.user = Parse.User.current();
+            if (self.user) {
+                log('Already logged in!');
+                log(self.user);
+                self.startApp();
+            }
+            else {
+                $('.loading-screen').fadeIn('fast');
+            }
+        }
+
+        self.startApp = function() {
             // DEBUG: Helpstream filler
             self.addHelpstreamItem('I gave her some water leftover from a corporate event.');
             self.addHelpstreamItem('I gave him a subway sandwhich since it was 2-for-1 day.');
             self.addHelpstreamItem('I gave him my old umbrella since i just got a new one.');
             self.addHelpstreamItem('I gave her food and water. She was very thankful!');
+
+            $('.loading-screen').fadeOut('medium');
         }
 
         self.addHelpstreamItem = function(note) {
-
 
             var delivery = {
                 helper: self.user,
@@ -93,6 +106,36 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
                 createdAt: new Date()
             };
             self.helpstream.push(delivery);
+        }
+
+        self.createAccount = function() {
+            var username = $('#username').val(),
+                password = $('#password').val(),
+                email = $('#email').val();
+            log('Create account: U: ' + username + ' / P: ' + password + ' / E: ' + email);
+
+            var user = new Parse.User();
+            user.set("username", username);
+            user.set("password", password);
+            user.set("email", email);
+
+            user.signUp(null, {
+              success: function(user) {
+                self.login();
+              },
+              error: function(user, error) {
+                // Show the error message somewhere and let the user try again.
+                log("Error: " + error.code + " " + error.message);
+                self.GreetingMessage('<error>Sorry, ' + error.message + '</error>')
+              }
+            });
+        }
+
+        self.showCreateAccountScreen = function() {
+            self.GreetingMessage('Please fill out your details to create an account.');
+            $('#email').parent().show();
+            $('.create-account, button.login').hide();
+            $('button.create').show();
         }
 
         self.showHelpstream = function() {
@@ -115,16 +158,37 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
 
         }
 
+        self.GreetingMessage = function(msg) {
+            $('.login-prompt .greeting').html(msg);
+        }
+
         self.login = function() {
-            $('.loading-screen').fadeOut('medium');
+            var username = $('#username').val(),
+                password = $('#password').val();
+
+            log('Logging in: ' + username + ' / ' + password);
+            $('button.login').text('Logging in...');
+            Parse.User.logIn(username, password, {
+                success: function(user) {
+
+                    self.startApp();
+                    log('Successful login!')
+                    $('button.login').text('Login');
+                },
+                error: function(user, error) {
+                    // The login failed. Check error to see why.
+                    log('FAILED login: ');
+                    log(error);
+                    self.GreetingMessage('<error>Invalid login. Please try again.</error>');
+                    $('button.login').text('Login');
+                }
+            });
         }
 
         self.logout = function() {
             if(confirm("Would you like to log out?")) {
-                return true;
-            }
-            else {
-                return false;
+                Parse.User.logOut();
+                self.init();
             }
         }
 
