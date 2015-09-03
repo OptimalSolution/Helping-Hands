@@ -141,4 +141,13 @@
 .login-buttons { margin-top: 15px }
 .create-account { margin-top: 10px; text-decoration: underline }
 
-.helpstream-button, user-info-button { cursor: pointer }
+.pointer { cursor: pointer }
+.btn-helpstream-back, .btn-userinfo-back, .btn-close, .btn-back { display : none }
+
+#helpstream { display: none;
+    position: absolute;
+    z-index: 1000;
+    min-height: 100%;
+    background-color: white;
+    width: 100%;
+}

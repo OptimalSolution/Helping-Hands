@@ -47,16 +47,19 @@
 		</div>
 		<div id="map-container" ng-controller="MapController as map">
 			<div class="top-nav">
-				<span class="pull-left glyphicon glyphicon-th-list helpstream-button" ng-click="app.showHelpstream()"></span>
+				<span class="pull-left glyphicon glyphicon-th-list pointer btn-helpstream" ng-click="app.showHelpstream()"></span>
+				<span class="pull-left glyphicon glyphicon-chevron-left btn-back pointer"></span>
 				<span>HELPING HANDS</span>
-				<span class="pull-right glyphicon glyphicon-user user-info-button" ng-click="app.showUserInfo()"></span></a>
+				<span class="pull-right glyphicon glyphicon-user btn-userinfo pointer" ng-click="app.showUserInfo()"></span></a>
+				<span class="pull-right glyphicon glyphicon-remove btn-close pointer"></span>
 			</div>
 			<div id="helpstream">
 				<div class="list-group-item" ng-repeat="item in app.helpstream">
-					<strong class='time-ago'>[{{item.helper.createdAt.toString()}}]</strong><br/>
+					<strong class='time-ago'>[{{item.helper.createdAt}}]</strong><br/>
 					A donation happened with the help of {{item.helper.username}}.
 				</div>
 			</div>
+
 			<div id="map-canvas"><p>Loading Map...</p></div>
 			<div class="map-center"><img src="img/map_center.png" alt="" /></div>
 			<div class="center-button"><a href ng-click="map.centerMapOnMe()"><span class="glyphicon glyphicon-screenshot"></span></a></div>

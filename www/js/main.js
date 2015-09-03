@@ -81,9 +81,12 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
             self.addHelpstreamItem('I gave her some water leftover from a corporate event.');
             self.addHelpstreamItem('I gave him a subway sandwhich since it was 2-for-1 day.');
             self.addHelpstreamItem('I gave him my old umbrella since i just got a new one.');
+            self.addHelpstreamItem('I gave her food and water. She was very thankful!');
         }
 
         self.addHelpstreamItem = function(note) {
+
+
             var delivery = {
                 helper: self.user,
                 note: note,
@@ -94,10 +97,15 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
 
         self.showHelpstream = function() {
 
-            log('Showing user feed...');
-            $('#helpstream').show();
-            // Check to see if they're logged in already
+            $('.btn-helpstream, .btn-userinfo').hide();
+            $('.btn-close, .btn-back').show().bind('click', self.hideHelpstream);
+            $('#helpstream').fadeIn('fast');
+        }
 
+        self.hideHelpstream = function() {
+            $('.btn-helpstream, .btn-userinfo').show();
+            $('.btn-close, .btn-back').hide().unbind();
+            $('#helpstream').fadeOut('fast');
         }
 
         self.showUserInfo = function() {
