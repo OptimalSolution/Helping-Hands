@@ -28,11 +28,23 @@
 		<!-- LOADING SCREEN -->
 		<div class="loading-screen">
 			<div class="header">
-				<div class="greeting">Welcome to Helping Hands</div>
 				<img class="logo" src="icon.png" alt="Helping Hands Logo">
+				<div class="intro-screen">
+					<div class="greeting">Welcome to Helping Hands</div>
+					<div class="sub-title">A charity dedicated to people in need who are just a few blocks away</div>
+					<div class="instructions">
+						<div class="left col-xs-6">Sara sees a person asking for food or water and drops a pin at his or her location.</div>
+						<div class="right col-xs-6">John has half a sandwich left over from lunch and can see pins nearby.</div>
+					</div>
+					<div class="connect-buttons col-xs-12">
+						<button class="btn btn-md col-xs-12 btn-primary" ng-click="app.loginWithUsername()">Log in with Username</button>
+						<button class="btn btn-md col-xs-12 btn-disabled" disabled="disabled" ng-click="app.loginWithFacebook()">Log in with Facebook</button>
+						<a class="" ng-click="app.showCreateAccountScreen()">Create Account</a>
+					</div>
+				</div>
 			</div>
 			<div class="login-prompt col-xs-12 col-sm-12">
-				<div class="greeting">Please log in to continue.</div>
+				<div class="greeting"></div>
 				<div class="input-group col-xs-12 col-sm-12" style="display: none">
 					<span class="input-group-addon" id="sizing-addon1">Email</span>
 					<input id="email" type="text" class="form-control" placeholder="helper@hh.org" aria-describedby="sizing-addon1">
@@ -46,9 +58,9 @@
 					<input id="password" type="password" class="form-control" placeholder="" aria-describedby="sizing-addon1">
 				</div>
 				<div class="login-buttons">
-					<a class="create-account pull-left pointer" ng-click="app.showCreateAccountScreen()">Create New Account</a>
-					<button class="btn btn-lg btn-primary login pull-right" ng-click="app.login()">Login</button>
-					<button class="btn btn-lg btn-primary create pull-right" ng-click="app.createAccount()">Create Account</button>
+					<a class="pull-left pointer" ng-click="app.init()">&laquo; Back</a>
+					<button class="btn btn-md btn-primary login pull-right" ng-click="app.login()">Login</button>
+					<button class="btn btn-md btn-primary create pull-right" ng-click="app.createAccount()">Create New Account</button>
 				</div>
 			</div>
 		</div>

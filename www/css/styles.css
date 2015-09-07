@@ -5,7 +5,7 @@
     margin: 0px;
     padding: 0px
 }
-
+.center { margin: 0 auto }
 .map-center {
     z-index: 100;
     width: 100%;
@@ -134,8 +134,11 @@
     z-index: 5000;
     position: absolute;
 }
-.header { margin-top: 20% }
-.login-prompt { margin-top: 30px }
+.header { }
+
+.intro-screen .greeting { font-weight: bold; font-size: 18px; }
+.intro-screen .sub-title { padding: 0px 35px 10px 35px; }
+.login-prompt { display: none; margin-top: 15px }
 .login-prompt .input-group { margin-top: 10px }
 .login-prompt .input-group-addon { width: 88px }
 .login-buttons { margin-top: 15px }
@@ -152,3 +155,9 @@ error { font-weight: bold; color: #900 }
     background-color: white;
     width: 100%;
 }
+
+.connect-buttons {
+    margin-top: 15px;
+}
+
+.connect-buttons button { margin-bottom: 10px }

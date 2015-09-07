@@ -80,10 +80,13 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
             self.user = Parse.User.current();
             if (self.user) {
                 log('Already logged in!');
-                log(self.user);
+                log(self.user.id);
                 self.startApp();
             }
             else {
+                $('.connect-buttons').show();
+                $('.login-prompt').hide()
+                                  .find('#email').parent().hide();
                 $('.loading-screen').fadeIn('fast');
             }
         }
@@ -96,6 +99,15 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
             self.addHelpstreamItem('I gave her food and water. She was very thankful!');
 
             $('.loading-screen').fadeOut('medium');
+        }
+
+        self.loginWithUsername = function() {
+            $('.connect-buttons').fadeOut('fast', function() {
+                $('button.login').show();
+                $('button.create').hide();
+                $('.login-prompt .greeting').text('');
+                $('.login-prompt').fadeIn('fast');
+            });
         }
 
         self.addHelpstreamItem = function(note) {
@@ -132,10 +144,14 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
         }
 
         self.showCreateAccountScreen = function() {
-            self.GreetingMessage('Please fill out your details to create an account.');
-            $('#email').parent().show();
+            self.GreetingMessage('<strong class="txt-warn">Please fill in your details to create an account.</stron>');
+            $('#email').show().parent().show();
             $('.create-account, button.login').hide();
             $('button.create').show();
+            $('.connect-buttons').fadeOut('fast', function() {
+                $('.login-prompt').fadeIn('fast');
+            });
+
         }
 
         self.showHelpstream = function() {
