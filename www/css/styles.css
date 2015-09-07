@@ -5,7 +5,7 @@
     margin: 0px;
     padding: 0px
 }
-
+.center { margin: 0 auto }
 .map-center {
     z-index: 100;
     width: 100%;
@@ -126,3 +126,38 @@
 .needs-button.active, .time-button.active { background-color: #CeF; }
 
 .location-details { list-style: none; text-align: left }
+.login-prompt .input-group { margin: 0 auto; }
+.loading-screen {
+    width: 100%;
+    background-color: #ADC4FF;
+    height: 100%;
+    z-index: 5000;
+    position: absolute;
+}
+.header { }
+
+.intro-screen .greeting { font-weight: bold; font-size: 18px; }
+.intro-screen .sub-title { padding: 0px 35px 10px 35px; }
+.login-prompt { display: none; margin-top: 15px }
+.login-prompt .input-group { margin-top: 10px }
+.login-prompt .input-group-addon { width: 88px }
+.login-buttons { margin-top: 15px }
+.create-account { margin-top: 10px; text-decoration: underline }
+
+.pointer { cursor: pointer }
+button.create, .btn-helpstream-back, .btn-userinfo-back, .btn-close, .btn-back { display : none }
+error { font-weight: bold; color: #900 }
+.instructions div { border: 1px solid grey; min-height: 110px; margin: 0px 5px 0px 5px; width: 46%; float: left; padding: 5px }
+#helpstream { display: none;
+    position: absolute;
+    z-index: 1000;
+    min-height: 100%;
+    background-color: white;
+    width: 100%;
+}
+
+.connect-buttons {
+    margin-top: 15px;
+}
+
+.connect-buttons button { margin-bottom: 10px }
