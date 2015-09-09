@@ -139,7 +139,7 @@
 							</div>
 						</div>
 					</div>
-					<div class="slide-to-help" ng-click="map.savePin()">SLIDE TO HELP ></div>
+					<div class="slide-to-help" ng-click="map.savePin()">SWIPE TO HELP >></div>
 					</div>
 				</div>
 			</div>
@@ -180,9 +180,51 @@
 						</div>
 					</div>
 					<input type="hidden" name="pin_id" value="">
-					<div class="slide-to-help" ng-click="map.giveHand()">SLIDE TO ACCEPT ></div>
+					<div class="slide-to-help" ng-click="map.giveHand()">SWIPE TO ACCEPT >></div>
+					<div class="slide-to-cancel" data-dismiss="modal"><< SWIPE TO CANCEL</div>
 					</div>
 				</div>
+			</div>
+
+
+
+			<!-- Modal: Cancel Delivery
+
+			Can't find the person in need
+Can't reach destination
+Can't complete delivery (catch all reason)
+-->
+			<div class="modal fade" id="cancelDeliveryModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+				<div class="modal-dialog" role="document">
+					<div class="modal-content">
+					<div class="modal-body">
+						<div class='needs'>
+							<h4>ARE YOU SURE YOU WANT TO CANCEL THE DELIVERY?</h4>
+							<div class="btn-group reasons" data-toggle="buttons">
+								<label class="btn btn-default">
+									<input type="radio" name="options" id="reason1" autocomplete="off">Yes. I can't find the person in need.
+								</label>
+								<label class="btn btn-default">
+									<input type="radio" name="options" id="reason2" autocomplete="off">Yes. I can't find the destination.
+								</label>
+								<label class="btn btn-default active">
+									<input type="radio" name="options" id="reason3" autocomplete="off">Yes. I can't complete the delivery.
+								</label>
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-md btn-default" data-dismiss="modal">No. Don't cancel.</button>
+						<button type="button" class="btn btn-md btn-danger" data-dismiss="modal" ng-click="app.cancelDelivery()">Cancel Delivery</button>
+					</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Overlay: Complete/Cancel -->
+			<div class="cancel-complete">
+				<div class="slide-to-help" ng-click="app.completeDelivery()">SWIPE TO COMPLETE >></div>
+				<div class="slide-to-cancel" ng-click="app.cancelRoute()"><< SWIPE TO CANCEL</div>
 			</div>
 		</div>
 	</body>

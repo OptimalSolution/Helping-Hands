@@ -16,10 +16,13 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
 
 (function() {
     var map = {},
+        currentPin = null,
         app = angular.module('HelpingHandApp', []);
 
-    app.controller('AppController', function() {
+    app.controller('AppController', ['$scope', '$log', function($scope, $log) {
         var self = this;
+        $scope.$log = $log;
+        //$scope = $scope;
         self.greeting = 'Welcome...';
         self.helpstream = [];
         self.user = { username: 'Meeee', email: 'daryl@sdtta.org', password: '****', id: '818' };
@@ -170,10 +173,67 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
             $('#dropPinModal').modal('show');
         };
 
-        self.init();
-    })
+        self.cancelRoute = function() {
+            $('#cancelDeliveryModal').modal('show');
+        }
 
-    app.controller('MapController', function() {
+        self.cancelDelivery = function() {
+            // Ask them why on their way out (can't find person, ran out of time)
+            log('Cancelling delivery...');
+            var reason_selected = $('.reasons label.active');
+            if(reason_selected && reason_selected.text().trim() !== '') {
+                var reason = reason_selected.text().trim();
+                $log.debug('Delivery cancelled: ' + reason);
+                $('.cancel-complete').fadeOut('fast');
+                self.resetMap();
+            }
+            else {
+                alert("Please choose a reason.");
+                log(reason_selected);
+            }
+        };
+
+        self.completeDelivery = function() {
+            // 1) Ask them if they delivered the goods
+
+        };
+
+        self.resetMap = function() {
+            log("Broadcase Event: resetMap");
+            $scope.$broadcast('resetMap', {});
+        }
+
+        self.markDeliveryComplete = function(deliveryNote) {
+
+            log('Marking pin as complete: ' + currentPin.id);
+
+            // 1) Mark the delivery as complete
+            currentPin.set('completedAt', new Date());
+            currentPin.set('completedBy', Parse.User.current());
+            currentPin.set('completed', true);
+            currentPin.set('deliveryNote', deliveryNote);
+
+            currentPin.save(null, {
+              success: function(thisPin) {
+
+                log('Pin marked complete: ' + thisPin.id);
+                self.resetMap();
+              },
+              error: function(thisPin, error) {
+                // Execute any logic that should take place if the save fails.
+                // error is a Parse.Error with an error code and message.
+                alert('Failed to mark pin as completed: ' + error.message);
+              }
+            });
+
+            // 2) Update the HH feed
+            // 3) Notify the creator that this person helped
+        };
+
+        self.init();
+    }])
+
+    app.controller('MapController', ['$scope', '$log', function($scope, $log) {
 
         var self = this;
         self.pins = null;
@@ -201,6 +261,7 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
                     self.createMap(location, 'map-canvas', function(mainMap) {
                         map = mainMap;
                         self.directionsDisplay.setMap(map);
+                        $('.map-center').show();
                         self.showPins(pins, map);
                     });
                 })
@@ -431,6 +492,7 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
                 })
             });
         };
+
         self.getRouteStats = function(directions) {
             var stats = { distance: 0.0, time: 0.0, eta: '(Unknown)' };
             var now = new Date();
@@ -460,14 +522,18 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
             var pinId = $('#inspectPinModal input[name="pin_id"]').val();
             self.getPinById(pinId, function(err, thePin) {
                 log('Giving a hand to: ' + pinId);
+                currentPin = thePin;
                 self.getDirectionsToPin(thePin, function(err, directions) {
                     if (!err) {
                       log('=== DISPLAYING ROUTE ===');
                       self.directionsDisplay.setDirections(directions);
+                      $('.cancel-complete').fadeIn('fast');
                     }
                 });
             })
         }
+
+
 
         self.getDirectionsToPin = function(thePin, callback) {
 
@@ -493,20 +559,6 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
                     callback(status, response);
                 }
             });
-        };
-
-        self.cancelDelivery = function(pin, whichMap) {
-            // Ask them why on their way out (can't find person, ran out of time)
-        };
-
-        self.completeDelivery = function(pin, whichMap) {
-            // 1) Ask them if they delivered the goods
-        };
-
-        self.markDeliveryComplete = function(pin, whichMap) {
-            // 1) Mark the delivery as complete
-            // 2) Update the HH feed
-            // 3) Notify the creator that this person helped
         };
 
         self.dropPinOnMap = function(pin, whichMap) {
@@ -550,5 +602,14 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
         // When the map API is loaded, create the map
         //log("***** MAP INIT OFF *****")
         google.maps.event.addDomListener(window, 'load', self.init);
-    });
+
+        // Handle map resets
+        $scope.$on('resetMap', function(event, args) {
+            log('Received Event: resetMap');
+            self.init();
+        });
+    }]);
+
+
+
 })();

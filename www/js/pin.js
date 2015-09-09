@@ -27,7 +27,9 @@ var Pin = Parse.Object.extend("Pin", {
             log('Creating pin at: ');
             log(coords);
             newPin.set('needs', []);
-            newPin.set('creator', Parse.User.current());
+            newPin.set('createdBy', Parse.User.current());
+            newPin.set('completedBy', null);
+            newPin.set('completedAt', null);
             newPin.set('time_at_location', parseInt(time_at_location) || 1); // Default to 1 hour
 
             var mapPoints = [], n = 0;
@@ -39,7 +41,7 @@ var Pin = Parse.Object.extend("Pin", {
             }
             newPin.set('coords', new Parse.GeoPoint(mapPoints[0], mapPoints[1]));
 
-            // Calculate when they will be there until
+            // TODO: Get a time conversion library to do this correctly
             var there_until = new Date();
             there_until.setHours(there_until.getHours() + time_at_location);
             newPin.set('there_until', there_until);
