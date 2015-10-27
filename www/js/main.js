@@ -1,19 +1,3 @@
-//var logger = (forge && forge.logging) ? forge.logging : { info: console.log, error: console.log };
-var logger = { info: console.log, error: function(text) { console.log('ERROR: ' + text) } };
-function log(message) {
-    console.log(message);
-}
-
-function log_error(message) {
-    console.log('ERROR: ' + message);
-}
-
-function success() { log('Success!'); }
-function error(content) { log_error(content); }
-
-// Initialize Parse
-Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZsTk7rY2hpaH1NlwdpjoPp3");
-
 (function() {
     var map = {},
         currentPin = null,
@@ -25,7 +9,7 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
         //$scope = $scope;
         self.greeting = 'Welcome...';
         self.helpstream = [];
-        self.user = { username: 'Meeee', email: 'daryl@sdtta.org', password: '****', id: '818' };
+        //self.user = { username: 'Meeee', email: 'daryl@sdtta.org', password: '****', id: '818' };
 
         self.init = function() {
 
@@ -41,7 +25,7 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
                 $('.connect-buttons').show();
                 $('.login-prompt').hide()
                                   .find('#email').parent().hide();
-                $('.loading-screen').fadeIn('fast');
+                $('.login-screen').fadeIn('fast');
             }
         }
 
@@ -52,7 +36,8 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
             self.addHelpstreamItem('I gave him my old umbrella since i just got a new one.');
             self.addHelpstreamItem('I gave her food and water. She was very thankful!');
 
-            $('.loading-screen').fadeOut('medium');
+
+            $('.login-screen').fadeOut('medium');
         }
 
         self.loginWithUsername = function() {
@@ -165,6 +150,7 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
         // Show the drop pin modal
         self.dropPin = function() {
             log('>> DROP PIN');
+            log(map.getCenter());
 
             // Clear previous choices and reset to default
             $('.needs-button').removeClass('active');
@@ -183,7 +169,22 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
             var reason_selected = $('.reasons label.active');
             if(reason_selected && reason_selected.text().trim() !== '') {
                 var reason = reason_selected.text().trim();
-                $log.debug('Delivery cancelled: ' + reason);
+
+                // TODO: Save cancellation reason to DB
+                var cancelledDelivery = Delivery.create(currentPin, self.user, 'cancelled', reason);
+                cancelledDelivery.save(null, {
+                  success: function(thisPin) {
+
+                    log('Delivery marked as cancelled: ' + currentPin.id);
+                    $log.debug('Delivery cancelled: ' + reason);
+                  },
+                  error: function(thisPin, error) {
+                    // Execute any logic that should take place if the save fails.
+                    // error is a Parse.Error with an error code and message.
+                    alert('Failed to mark pin as completed: ' + error.message);
+                  }
+                });
+
                 $('.cancel-complete').fadeOut('fast');
                 self.resetMap();
             }
@@ -199,7 +200,7 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
         };
 
         self.resetMap = function() {
-            log("Broadcase Event: resetMap");
+            log("Broadcast Event: resetMap");
             $scope.$broadcast('resetMap', {});
         }
 
@@ -406,7 +407,8 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
             }
 
             // Create the pin
-            var thisPin = Pin.create(map.getCenter(), time_at_location);
+            var mapCenter = map.getCenter();
+            var thisPin = Pin.create([mapCenter.lat(), mapCenter.lng()], time_at_location);
 
             // Save the needs to the pin
             if(needs && needs.length && needs.length > 0) {
@@ -497,6 +499,7 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
             var stats = { distance: 0.0, time: 0.0, eta: '(Unknown)' };
             var now = new Date();
 
+            log('Getting route stats...')
             // If there is a route, sum up the distance of the legs
             if(directions.routes && directions.routes[0]) {
                 var route = directions.routes[0];
@@ -553,9 +556,11 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
 
             }, function(response, status) {
                 if (status == google.maps.DirectionsStatus.OK) {
+                    log('Directions: acquired')
                     callback(null, response);
                 }
                 else {
+                    log('ERROR getting directions')
                     callback(status, response);
                 }
             });
