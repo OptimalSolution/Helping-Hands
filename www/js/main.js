@@ -1,35 +1,26 @@
-//var logger = (forge && forge.logging) ? forge.logging : { info: console.log, error: console.log };
-var logger = { info: console.log, error: function(text) { console.log('ERROR: ' + text) } };
-function log(message) {
-    console.log(message);
-}
-
-function log_error(message) {
-    console.log('ERROR: ' + message);
-}
-
-function success() { log('Success!'); }
-function error(content) { log_error(content); }
-
-// Initialize Parse
-Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZsTk7rY2hpaH1NlwdpjoPp3");
-
 (function() {
     var map = {},
+        currentPin = null,
+        deliveryUnderway = false,
+        myLatlng = {},
         app = angular.module('HelpingHandApp', []);
 
-    app.controller('AppController', function() {
+
+    app.controller('AppController', ['$scope', '$log', function($scope, $log) {
         var self = this;
+        $scope.$log = $log;
         self.greeting = 'Welcome...';
-        self.helpstream = [];
-        self.user = { username: 'Meeee', email: 'daryl@sdtta.org', password: '****', id: '818' };
+        self.deliveries = [];
 
         self.init = function() {
 
             log('Init App...');
-            // Check to see if they're logged in already
 
+            // Check to see if they're logged in already
             self.user = Parse.User.current();
+            thisUser = self.user;
+            console.log('SELF.USER')
+            console.log(JSON.stringify(self.user))
             if (self.user) {
                 log('Already logged in as: ' + self.user.get('username'));
                 self.startApp();
@@ -38,18 +29,31 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
                 $('.connect-buttons').show();
                 $('.login-prompt').hide()
                                   .find('#email').parent().hide();
-                $('.loading-screen').fadeIn('fast');
+                $('.login-screen').fadeIn('fast');
             }
+
+            // Have Complete/Cancel always show up if a delivery in underway and there are no dialogs
+            $('#cancelDeliveryModal, #completeDeliveryModal').on('hidden.bs.modal', function (e) {
+                if(deliveryUnderway) {
+                    self.showCancelCompleteOptions();
+                }
+            })
         }
 
         self.startApp = function() {
-            // DEBUG: Helpstream filler
-            self.addHelpstreamItem('I gave her some water leftover from a corporate event.');
-            self.addHelpstreamItem('I gave him a subway sandwhich since it was 2-for-1 day.');
-            self.addHelpstreamItem('I gave him my old umbrella since i just got a new one.');
-            self.addHelpstreamItem('I gave her food and water. She was very thankful!');
+            self.getRecentDeliveries();
+            $('.login-screen').fadeOut('medium');
+        }
 
-            $('.loading-screen').fadeOut('medium');
+        self.getRecentDeliveries = function() {
+
+            console.log(">> Getting recent deliveries...")
+            // Fetch the most recent deliveries
+            Deliveries.loadNear(myLatlng, function (nearbyDeliveries) {
+                self.deliveries = nearbyDeliveries || {};
+                //console.log('++++++ ' + self.deliveries.length + ' deliveries loaded');
+                //console.log(JSON.stringify(self.deliveries));
+            })
         }
 
         self.loginWithUsername = function() {
@@ -59,16 +63,6 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
                 $('.login-prompt .greeting').text('');
                 $('.login-prompt').fadeIn('fast');
             });
-        }
-
-        self.addHelpstreamItem = function(note) {
-
-            var delivery = {
-                helper: self.user,
-                note: note,
-                createdAt: new Date()
-            };
-            self.helpstream.push(delivery);
         }
 
         self.createAccount = function() {
@@ -118,11 +112,11 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
             $('#helpstream').fadeOut('fast');
         }
 
+        self.showCancelCompleteOptions = function() { $('.cancel-complete').fadeIn('fast'); }
+        self.hideCancelCompleteOptions = function() { $('.cancel-complete').fadeOut('fast'); }
         self.showUserInfo = function() {
-
             log('Showing User Info...');
             // Check to see if they're logged in already
-
         }
 
         self.GreetingMessage = function(msg) {
@@ -162,6 +156,7 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
         // Show the drop pin modal
         self.dropPin = function() {
             log('>> DROP PIN');
+            log(map.getCenter());
 
             // Clear previous choices and reset to default
             $('.needs-button').removeClass('active');
@@ -170,10 +165,117 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
             $('#dropPinModal').modal('show');
         };
 
-        self.init();
-    })
 
-    app.controller('MapController', function() {
+        self.cancelRoute = function() {
+            self.hideCancelCompleteOptions();
+            $('#cancelDeliveryModal').modal('show');
+        }
+
+        self.cancelDelivery = function() {
+            // Ask them why on their way out (can't find person, ran out of time)
+            log('Cancelling delivery...');
+            var reason_selected = $('.reasons label.active');
+            if(reason_selected && reason_selected.text().trim() !== '') {
+                var reason = reason_selected.text().trim();
+
+                // TODO: Save cancellation reason to DB
+                var cancelledDelivery = Delivery.create(currentPin, self.user, 'cancelled', reason);
+                cancelledDelivery.save(null, {
+                  success: function(thisPin) {
+                    deliveryUnderway = false;
+                    log('Delivery marked as cancelled: ' + currentPin.id);
+                    $log.debug('Delivery cancelled: ' + reason);
+                  },
+                  error: function(thisPin, error) {
+                    // Execute any logic that should take place if the save fails.
+                    // error is a Parse.Error with an error code and message.
+                    alert('Failed to mark pin as completed: ' + error.message);
+                  }
+                });
+
+                self.resetMap();
+            }
+            else {
+                alert("Please choose a reason.");
+                log(reason_selected);
+            }
+        };
+
+        self.completeRoute = function() {
+            self.hideCancelCompleteOptions();
+            $('#completeDeliveryModal').modal('show');
+        }
+
+        self.completeDelivery = function() {
+            // Ask them why on their way out (can't find person, ran out of time)
+            log('Completing delivery...');
+            var helpers_note = $('.helpers-note').val().trim();
+
+            if(helpers_note !== '') {
+
+                // TODO: Save cancellation reason to DB
+                var completedDelivery = Delivery.create(currentPin, self.user, 'completed', helpers_note);
+                completedDelivery.save(null, {
+                  success: function(thisPin) {
+
+                    log('Delivery marked as completed: ' + currentPin.id);
+                    // Mark pin as completed by this user
+
+                    // Reset everything
+                    $log.debug('Delivery note: ' + helpers_note);
+                    deliveryUnderway = false;
+                    self.hideCancelCompleteOptions(); // Just in case of lag
+                    self.markDeliveryComplete(helpers_note);
+                  },
+                  error: function(thisPin, error) {
+                    // Execute any logic that should take place if the save fails.
+                    // error is a Parse.Error with an error code and message.
+                    alert('Failed to mark pin as completed: ' + error.message);
+                  }
+                });
+
+
+            }
+            else {
+                alert("Please tell us what you delivered.");
+                log('No helper note given. Not submitting.');
+            }
+        };
+
+        self.resetMap = function() {
+            log("Broadcast Event: resetMap");
+            $('#completeDeliveryModal, #cancelDeliveryModal').modal('hide');
+            $scope.$broadcast('resetMap', {});
+        }
+
+        self.markDeliveryComplete = function(deliveryNote) {
+
+            log('Marking pin as complete: ' + currentPin.id);
+
+            // 1) Mark the delivery as complete
+            currentPin.set('completed', true);
+
+            currentPin.save(null, {
+              success: function(thisPin) {
+
+                log('Pin marked complete: ' + thisPin.id);
+                self.resetMap();
+              },
+              error: function(thisPin, error) {
+                // Execute any logic that should take place if the save fails.
+                // error is a Parse.Error with an error code and message.
+                alert('Failed to mark pin as completed: ' + error.message);
+              }
+            });
+
+            // 2) Update the HH feed
+            // 3) Notify the creator that this person helped
+        };
+
+        self.init();
+    }])
+
+    app.controller('MapController', ['$scope', '$log', function($scope, $log) {
 
         var self = this;
         self.pins = null;
@@ -196,11 +298,20 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
             self.getUserLocation(function(location) {
                 log('*** User location ***');
                 log(location);
+
                 // After getting their location, load pins nearby
                 self.loadPins(function(pins) {
                     self.createMap(location, 'map-canvas', function(mainMap) {
+
+                        if(pins && pins[0]) {
+                            console.log('****************');
+                            console.log(pins[0]);
+                            console.log(JSON.stringify(pins[0].get('createdBy').get('username')));
+                        }
+
                         map = mainMap;
                         self.directionsDisplay.setMap(map);
+                        $('.map-center').show();
                         self.showPins(pins, map);
                     });
                 })
@@ -270,6 +381,8 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
                     self.myLatlng = self.defaultLocation;
                 }
 
+                myLatlng = self.myLatlng;
+
                 // Save the position and re-center the map
                 log('++ GOT User Location');
                 callback(self.myLatlng);
@@ -288,6 +401,8 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
                 log('Loading pins around ' + self.myLatlng.lat + ',' + self.myLatlng.lng);
                 self.pinQuery = new Parse.Query(Pin);
                 self.pinQuery.near('coords', new Parse.GeoPoint(self.myLatlng.lat, self.myLatlng.lng));
+                self.pinQuery.include('createdBy');
+                self.pinQuery.equalTo('completed', false);
                 self.pinQuery.find({
                   success: function(results) {
                     log("Successfully retrieved " + results.length + " pins.");
@@ -329,6 +444,32 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
             callback(thisMap);
         }
 
+        self.getNeighborhood = function(mapPoints, callback) {
+
+            // Look up the neighborhood
+            var api_url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + mapPoints[0] + "," + mapPoints[1] + "&key=AIzaSyC6Qfbd_zjalNr0MmZa_rNMn4KsA6POwY4&result_type=neighborhood&location_type=APPROXIMATE"
+            $.ajax({ url: api_url, dataType: 'json', crossDomain: true }).done(function(data) {
+                console.log('****** Geolocation resutlts ****** ')
+                var neighborhood = false;
+                if(data && data.results && data.results && data.results.length > 0) {
+                    var area = data.results[0];
+                    if(area.address_components) {
+                        for(var i in area.address_components) {
+                            var part = area.address_components[i];
+                            console.log('Checking: ' + JSON.stringify(part))
+                            if(part.types[0] == 'neighborhood') {
+                                neighborhood = part.short_name;
+                                console.log('++ Neighborhood found: ' + neighborhood);
+                                callback(neighborhood);
+                                break;
+                            }
+                        }
+                    }
+                }
+                callback(neighborhood);
+            })
+        }
+
         self.savePin = function() {
 
             var needs = $('.needs-button.active') || [],
@@ -345,35 +486,42 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
             }
 
             // Create the pin
-            var thisPin = Pin.create(map.getCenter(), time_at_location);
+            var coords = [map.getCenter().lat(), map.getCenter().lng()];
+            var thisPin = Pin.create(coords, time_at_location);
+            self.getNeighborhood(coords, function(neighborhood) {
+                thisPin.set('neighborhood', neighborhood);
 
-            // Save the needs to the pin
-            if(needs && needs.length && needs.length > 0) {
-                $(needs).find('.need').each(function() {
-                    thisPin.addNeed($(this).val());
-                })
-                console.log("Added " + needs.length + " needs.");
-            }
+                // Save the needs to the pin
+                if(needs && needs.length && needs.length > 0) {
+                    $(needs).find('.need').each(function() {
+                        thisPin.addNeed($(this).val());
+                    })
+                    console.log("Added " + needs.length + " needs.");
+                }
 
-            if(thisPin.isValid()) {
-                // If it's a valid pin: hide the overlay, then save & show the pin
-                thisPin.save(null, {
-                  success: function(thisPin) {
-                    // Execute any logic that should take place after the object is saved.
-                    log('New pin created with objectId: ' + thisPin.id);
-                    $('#dropPinModal').modal('hide');
-                    self.dropPinOnMap(thisPin, map);
-                  },
-                  error: function(thisPin, error) {
-                    // Execute any logic that should take place if the save fails.
-                    // error is a Parse.Error with an error code and message.
-                    alert('Failed to create new pin, with error code: ' + error.message);
-                  }
-                });
-            }
-            else {
-                log('INVALID PIN: Not saving');
-            }
+                if(thisPin.isValid()) {
+                    // If it's a valid pin: hide the overlay, then save & show the pin
+                    thisPin.save(null, {
+                      success: function(thisPin) {
+                        // Execute any logic that should take place after the object is saved.
+                        log('New pin created with objectId: ' + thisPin.id);
+                        $('#dropPinModal').modal('hide');
+                        self.dropPinOnMap(thisPin, map);
+                      },
+                      error: function(thisPin, error) {
+                        // Execute any logic that should take place if the save fails.
+                        // error is a Parse.Error with an error code and message.
+                        alert('Failed to create new pin, with error code: ' + error.message);
+                      }
+                    });
+                }
+                else {
+                    log('INVALID PIN: Not saving');
+                }
+
+            })
+
+
         };
 
         self.getPinById = function(pinId, callback) {
@@ -431,10 +579,12 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
                 })
             });
         };
+
         self.getRouteStats = function(directions) {
             var stats = { distance: 0.0, time: 0.0, eta: '(Unknown)' };
             var now = new Date();
 
+            log('Getting route stats...')
             // If there is a route, sum up the distance of the legs
             if(directions.routes && directions.routes[0]) {
                 var route = directions.routes[0];
@@ -460,14 +610,19 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
             var pinId = $('#inspectPinModal input[name="pin_id"]').val();
             self.getPinById(pinId, function(err, thePin) {
                 log('Giving a hand to: ' + pinId);
+                currentPin = thePin;
                 self.getDirectionsToPin(thePin, function(err, directions) {
                     if (!err) {
                       log('=== DISPLAYING ROUTE ===');
                       self.directionsDisplay.setDirections(directions);
+                      deliveryUnderway = true;
+                      $('.cancel-complete').fadeIn('fast');
                     }
                 });
             })
         }
+
+
 
         self.getDirectionsToPin = function(thePin, callback) {
 
@@ -487,26 +642,14 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
 
             }, function(response, status) {
                 if (status == google.maps.DirectionsStatus.OK) {
+                    log('Directions: acquired')
                     callback(null, response);
                 }
                 else {
+                    log('ERROR getting directions')
                     callback(status, response);
                 }
             });
-        };
-
-        self.cancelDelivery = function(pin, whichMap) {
-            // Ask them why on their way out (can't find person, ran out of time)
-        };
-
-        self.completeDelivery = function(pin, whichMap) {
-            // 1) Ask them if they delivered the goods
-        };
-
-        self.markDeliveryComplete = function(pin, whichMap) {
-            // 1) Mark the delivery as complete
-            // 2) Update the HH feed
-            // 3) Notify the creator that this person helped
         };
 
         self.dropPinOnMap = function(pin, whichMap) {
@@ -550,5 +693,14 @@ Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZ
         // When the map API is loaded, create the map
         //log("***** MAP INIT OFF *****")
         google.maps.event.addDomListener(window, 'load', self.init);
-    });
+
+        // Handle map resets
+        $scope.$on('resetMap', function(event, args) {
+            log('Received Event: resetMap');
+            self.init();
+        });
+    }]);
+
+
+
 })();
