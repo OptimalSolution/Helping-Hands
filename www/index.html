@@ -4,6 +4,7 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="initial-scale=1">
 		<script src="js/jquery.min.js"></script>
+		<script src="js/jquery.timeago.js"></script>
 
 		<script src="https://www.parse.com/downloads/javascript/parse-1.4.2.js"></script>
 		<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
@@ -74,10 +75,22 @@
 				<span class="pull-right glyphicon glyphicon-remove btn-close pointer"></span>
 			</div>
 			<div id="helpstream">
-				<div class="list-group-item" ng-repeat="item in app.helpstream">
-					<strong class='time-ago'>[{{item.helper.createdAt}}]</strong><br/>
-					A donation happened with the help of {{item.helper.username}}.
-				</div>
+				<ul class="media-list">
+				  <li class="media" ng-repeat="item in app.deliveries">
+					<div class="row">
+						<div class="col-xs-4 stats">
+					        <!--img class="media-object" src="..." alt="..."-->
+							<time class="timeago" datetime="{{item.createdAt}}">{{item.timeElapsed}}</time><br/>
+							<span class="food-icon glyphicon glyphicon-apple media-object"></span>
+							<span class="location">[Area]</span>
+					    </div>
+					    <div class="col-xs-8 info">
+						  <p class="helpers"><strong>{{item.createdByUser}}</strong> made a donation happen with the help of <strong>{{item.helpedBy}}</strong>.</p>
+					      <p class="hidden">Message: {{item.message}}</p>
+					    </div>
+					</div>
+				  </li>
+				</ul>
 			</div>
 
 			<div id="map-canvas"><p>Loading Map...</p></div>
@@ -187,14 +200,35 @@
 				</div>
 			</div>
 
-
+			<!-- Modal: Cancel Delivery
+				* Can't find the person in need
+				* Can't reach destination
+				* Can't complete delivery (catch all reason)
+			-->
+			<div class="modal fade" id="completeDeliveryModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+				<div class="modal-dialog" role="document">
+					<div class="modal-content">
+					<div class="modal-body">
+						<div class='needs'>
+							<h4>THANK YOU SO MUCH FOR GIVING SOMEONE A HAND</h4>
+							<p>Chances are, you made someone's day!</p>
+							<p>Can you send a note to the person who dropped the pin and tell them what you delivered?</p>
+							<div class="form-group">
+							  <textarea class="form-control helpers-note" rows="5" id="comment"></textarea>
+							</div>
+						</div>
+					</div>
+					<div class="slide-to-help" ng-click="app.completeDelivery()">SWIPE TO SEND >></div>
+					<div class="slide-to-cancel" data-dismiss="modal"><< SWIPE TO CANCEL</div>
+					</div>
+				</div>
+			</div>
 
 			<!-- Modal: Cancel Delivery
-
-			Can't find the person in need
-Can't reach destination
-Can't complete delivery (catch all reason)
--->
+				* Can't find the person in need
+				* Can't reach destination
+				* Can't complete delivery (catch all reason)
+			-->
 			<div class="modal fade" id="cancelDeliveryModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
 				<div class="modal-dialog" role="document">
 					<div class="modal-content">
@@ -224,7 +258,7 @@ Can't complete delivery (catch all reason)
 
 			<!-- Overlay: Complete/Cancel -->
 			<div class="cancel-complete">
-				<div class="slide-to-help" ng-click="app.completeDelivery()">SWIPE TO COMPLETE >></div>
+				<div class="slide-to-help" ng-click="app.completeRoute()">SWIPE TO COMPLETE >></div>
 				<div class="slide-to-cancel" ng-click="app.cancelRoute()"><< SWIPE TO CANCEL</div>
 			</div>
 		</div>

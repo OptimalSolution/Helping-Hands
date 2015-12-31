@@ -14,3 +14,6 @@ function error(content) { log_error(content); }
 
 // Initialize Parse
 Parse.initialize("ChlGfJAgxi3j31gH1RbdYCNUDqLU8Xjg2c5yZ0eJ", "rCLLSMnJySeTFohQoZsTk7rY2hpaH1NlwdpjoPp3");
+
+// Global vars
+var thisUser = false;

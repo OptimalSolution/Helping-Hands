@@ -158,14 +158,32 @@
 button.create, .btn-helpstream-back, .btn-userinfo-back, .btn-close, .btn-back { display : none }
 error { font-weight: bold; color: #900 }
 .instructions div { border: 1px solid grey; min-height: 110px; margin: 0px 5px 0px 5px; width: 46%; float: left; padding: 5px }
-#helpstream { display: none;
+#helpstream {
+    display: none;
     position: absolute;
     z-index: 1000;
     min-height: 100%;
     background-color: white;
     width: 100%;
 }
+#helpstream li {
+    padding: 5px 10px 5px 0px;
+    border-bottom: 1px solid #DDD;
+}
+#helpstream .info {
+    padding: 5px 25px 5px 0px;
+}
 
+#helpstream .food-icon,
+#helpstream .water-icon,
+#helpstream .umbrella-icon { font-size: 26px; padding: 0px 5px 0px 0px; }
+
+/*#helpstream ul {
+    padding: 5px 10px 5px 0px;
+}
+#helpstream .media-heading { text-align: left }
+#helpstream .stats { padding-left: 5px; }
+*/
 .connect-buttons {
     margin-top: 15px;
 }

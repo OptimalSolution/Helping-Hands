@@ -24,12 +24,11 @@ var Pin = Parse.Object.extend("Pin", {
         create: function(coords, time_at_location) {
 
             var newPin = new Pin();
+
             log('Creating pin at: ');
             log(coords);
             newPin.set('needs', []);
-            newPin.set('createdBy', Parse.User.current());
-            newPin.set('completedBy', null);
-            newPin.set('completedAt', null);
+            newPin.set('completed', false);
             newPin.set('time_at_location', parseInt(time_at_location) || 1); // Default to 1 hour
 
             var mapPoints = [], n = 0;
@@ -45,6 +44,8 @@ var Pin = Parse.Object.extend("Pin", {
             var there_until = new Date();
             there_until.setHours(there_until.getHours() + time_at_location);
             newPin.set('there_until', there_until);
+            newPin.set('createdBy', thisUser);
+            //newPin.relation('createdBy').add(thisUser);
             return newPin;
         }
 });
