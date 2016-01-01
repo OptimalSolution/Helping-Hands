@@ -135,7 +135,7 @@
 
 .needs-button.active, .time-button.active { background-color: #CeF; }
 
-.location-details { list-style: none; text-align: left }
+.location-details { list-style: none; text-align: left; padding-left: 5px; }
 .login-prompt .input-group { margin: 0 auto; }
 .loading-screen {
     width: 100%;
@@ -196,3 +196,4 @@ error { font-weight: bold; color: #900 }
     display: none;
 }
 .reasons label { width: 100% }
+.neighborhood, .distance, .time, .eta { font-weight; bold }

@@ -31,14 +31,14 @@ var Pin = Parse.Object.extend("Pin", {
             newPin.set('completed', false);
             newPin.set('time_at_location', parseInt(time_at_location) || 1); // Default to 1 hour
 
-            var mapPoints = [], n = 0;
+            /*var mapPoints = [], n = 0;
             for(var i in coords) {
                 if(n <= 1) {
                     mapPoints.push(coords[i]);
                 }
                 n++;
-            }
-            newPin.set('coords', new Parse.GeoPoint(mapPoints[0], mapPoints[1]));
+            }*/
+            newPin.set('coords', new Parse.GeoPoint(coords[0], coords[1]));
 
             // TODO: Get a time conversion library to do this correctly
             var there_until = new Date();

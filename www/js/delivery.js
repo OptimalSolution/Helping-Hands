@@ -34,13 +34,16 @@ var Deliveries = {
             if(results.length > 0) {
                 results.forEach(function(item) {
 
+                     // Use shorthand for hour & minute (to save space)
                      var timeAgo = jQuery.timeago(item.createdAt);
                      var timeElapsed = timeAgo.charAt(0).toUpperCase() + timeAgo.slice(1);
+                     timeElapsed = timeElapsed.replace('minute', 'min').replace('hour', 'hr');
                     deliveries.push({
                         createdAt: item.createdAt,
                         timeElapsed: timeElapsed,
                         helpedBy: item.get('finishedBy').get('username'),
                         createdByUser: item.get('pin').get('createdBy').get('username'),
+                        neighborhood: item.get('pin').get('neighborhood'),
                         message: item.get('message')
                     })
                 })

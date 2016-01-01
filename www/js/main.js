@@ -450,7 +450,7 @@
             var api_url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + mapPoints[0] + "," + mapPoints[1] + "&key=AIzaSyC6Qfbd_zjalNr0MmZa_rNMn4KsA6POwY4&result_type=neighborhood&location_type=APPROXIMATE"
             $.ajax({ url: api_url, dataType: 'json', crossDomain: true }).done(function(data) {
                 console.log('****** Geolocation resutlts ****** ')
-                var neighborhood = false;
+                var neighborhood = '(Unknown)';
                 if(data && data.results && data.results && data.results.length > 0) {
                     var area = data.results[0];
                     if(area.address_components) {
@@ -460,7 +460,6 @@
                             if(part.types[0] == 'neighborhood') {
                                 neighborhood = part.short_name;
                                 console.log('++ Neighborhood found: ' + neighborhood);
-                                callback(neighborhood);
                                 break;
                             }
                         }
@@ -572,9 +571,11 @@
                 self.getDirectionsToPin(thePin, function(err, directions) {
 
                     var stats = self.getRouteStats(directions);
-                    $('#inspectPinModal .location-details .distance').text(stats.distance);
-                    $('#inspectPinModal .location-details .time').text(stats.time);
-                    $('#inspectPinModal .location-details .eta').text(stats.eta);
+
+                    $('#inspectPinModal .location-details .neighborhood').text(thePin.get('neighborhood')).css('font-weight','bold');
+                    $('#inspectPinModal .location-details .distance').text(stats.distance).css('font-weight','bold');
+                    $('#inspectPinModal .location-details .time').text(stats.time).css('font-weight','bold');
+                    $('#inspectPinModal .location-details .eta').text(stats.eta).css('font-weight','bold');
                     $('#inspectPinModal').modal('show');
                 })
             });

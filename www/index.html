@@ -82,7 +82,7 @@
 					        <!--img class="media-object" src="..." alt="..."-->
 							<time class="timeago" datetime="{{item.createdAt}}">{{item.timeElapsed}}</time><br/>
 							<span class="food-icon glyphicon glyphicon-apple media-object"></span>
-							<span class="location">[Area]</span>
+							<span class="location">{{item.neighborhood}}</span>
 					    </div>
 					    <div class="col-xs-8 info">
 						  <p class="helpers"><strong>{{item.createdByUser}}</strong> made a donation happen with the help of <strong>{{item.helpedBy}}</strong>.</p>
@@ -187,6 +187,7 @@
 						<div class='location'>
 							<h4>HERE ARE THE DETAILS...</h4>
 							<ul class="location-details">
+								<li>Neighborhood: <span class="neighborhood">--</span></li>
 								<li>Distance: <span class="distance">--</span></li>
 								<li>Estimated Walk Time: <span class="time">--</span></li>
 								<li>Estimated Arrival Time: <span class="eta">--</span></li>
